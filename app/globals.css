@@ -450,3 +450,79 @@ button[type="submit"]:disabled {
     transform: rotate(90deg);
   }
 }
+
+/* PWA Installer Styles */
+.pwa-installer {
+  margin: 20px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+.install-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6);
+  }
+}
+
+.install-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.install-button:active {
+  transform: translateY(-1px);
+}
+
+.pwa-status {
+  text-align: center;
+  margin: 20px auto;
+}
+
+.pwa-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.pwa-badge.installed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* iOS specific styles */
+@supports (-webkit-touch-callout: none) {
+  .install-button {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Standalone mode styles */
+@media all and (display-mode: standalone) {
+  .header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .container {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

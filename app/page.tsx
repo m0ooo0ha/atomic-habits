@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import SubscriptionForm from './components/SubscriptionForm';
 import SubscriptionList from './components/SubscriptionList';
 import NotificationBanner from './components/NotificationBanner';
+import PWAInstaller from './components/PWAInstaller';
 
 interface Subscription {
   id: string;
@@ -74,6 +75,8 @@ export default function Home() {
           </button>
         )}
       </header>
+
+      <PWAInstaller />
 
       <NotificationBanner />
 
