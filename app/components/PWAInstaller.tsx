@@ -40,6 +40,15 @@ export default function PWAInstaller() {
       setIsInstalled(true);
       setShowInstallButton(false);
       console.log('PWA installed successfully');
+
+      // Request notification permission after installation
+      setTimeout(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission().then((permission) => {
+            console.log('Notification permission:', permission);
+          });
+        }
+      }, 1000);
     });
 
     return () => {

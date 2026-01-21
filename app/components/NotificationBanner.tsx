@@ -27,9 +27,13 @@ export default function NotificationBanner() {
           if ('Notification' in window && Notification.permission === 'granted' && data.length > 0) {
             data.forEach((transfer: Transfer) => {
               if (!dismissed.has(transfer.id)) {
-                new Notification('انتقال جديد! 🔔', {
-                  body: `${transfer.playerName}: ${transfer.fromTeam} ← ${transfer.toTeam}`,
-                  icon: '/notification-icon.png',
+                new Notification('⚽ انتقال جديد!', {
+                  body: `${transfer.playerName}\n${transfer.fromTeam} ← ${transfer.toTeam}`,
+                  icon: '/icon-192x192.svg',
+                  badge: '/icon-96x96.svg',
+                  tag: `transfer-${transfer.id}`,
+                  requireInteraction: false,
+                  silent: false,
                 });
               }
             });
