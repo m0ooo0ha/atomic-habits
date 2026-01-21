@@ -9,10 +9,10 @@ export interface TransferInfo {
 }
 
 export async function searchTransferNews(name: string, type: 'player' | 'team'): Promise<TransferInfo> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.DEEPSEEK_API_KEY;
 
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is not set');
+    throw new Error('DEEPSEEK_API_KEY is not set');
   }
 
   const prompt = type === 'player'
@@ -60,22 +60,22 @@ export async function searchTransferNews(name: string, type: 'player' | 'team'):
        }`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1024,
+        model: 'deepseek-chat',
         messages: [
           {
             role: 'user',
             content: prompt,
           },
         ],
+        max_tokens: 1024,
+        temperature: 0.7,
       }),
     });
 
@@ -84,7 +84,7 @@ export async function searchTransferNews(name: string, type: 'player' | 'team'):
     }
 
     const data = await response.json();
-    const content = data.content[0].text;
+    const content = data.choices[0].message.content;
 
     // Extract JSON from the response
     const jsonMatch = content.match(/\{[\s\S]*\}/);

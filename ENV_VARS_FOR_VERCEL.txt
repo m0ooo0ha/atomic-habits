@@ -4,7 +4,7 @@
 # ============================================
 # المتغير الأول
 # ============================================
-KEY:   ANTHROPIC_API_KEY
+KEY:   DEEPSEEK_API_KEY
 VALUE: sk-7e7d879b70324c4995fcf584ff380d81
 
 Environments:
