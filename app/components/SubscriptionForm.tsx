@@ -7,8 +7,8 @@ interface SubscriptionFormProps {
 }
 
 export default function SubscriptionForm({ onSubscribe }: SubscriptionFormProps) {
-  const [type, setType] = useState<'player' | 'team'>('player');
-  const [name, setName] = useState('');
+  const [topic, setTopic] = useState('');
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -23,7 +23,7 @@ export default function SubscriptionForm({ onSubscribe }: SubscriptionFormProps)
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ type, name }),
+        body: JSON.stringify({ topic, description }),
       });
 
       if (!response.ok) {
@@ -31,7 +31,8 @@ export default function SubscriptionForm({ onSubscribe }: SubscriptionFormProps)
       }
 
       setMessage('✓ تمت الإضافة بنجاح!');
-      setName('');
+      setTopic('');
+      setDescription('');
       onSubscribe();
     } catch (error) {
       setMessage('✗ خطأ في الإضافة. حاول مرة أخرى.');
@@ -43,49 +44,40 @@ export default function SubscriptionForm({ onSubscribe }: SubscriptionFormProps)
 
   return (
     <div className="subscription-form">
-      <h2>إضافة متابعة جديدة</h2>
+      <h2>أضف موضوع جديد للمتابعة</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>نوع المتابعة:</label>
-          <div className="radio-group">
-            <label>
-              <input
-                type="radio"
-                value="player"
-                checked={type === 'player'}
-                onChange={(e) => setType(e.target.value as 'player')}
-              />
-              لاعب
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="team"
-                checked={type === 'team'}
-                onChange={(e) => setType(e.target.value as 'team')}
-              />
-              نادي
-            </label>
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="name">
-            {type === 'player' ? 'اسم اللاعب:' : 'اسم النادي:'}
+          <label htmlFor="topic">
+            الموضوع المراد تتبعه: *
           </label>
           <input
             type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={type === 'player' ? 'مثال: كريستيانو رونالدو' : 'مثال: ريال مدريد'}
+            id="topic"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            placeholder="مثال: ضربة أمريكا لإيران، علاج الربو، معايير ISO الجديدة"
             required
-            disabled={loading}
+            dir="rtl"
+          />
+          <small>أدخل أي موضوع تريد متابعته (سياسة، صحة، تقنية، اقتصاد، إلخ)</small>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="description">
+            وصف اختياري:
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="مثال: أريد معرفة آخر التطورات حول هذا الموضوع"
+            rows={3}
+            dir="rtl"
           />
         </div>
 
-        <button type="submit" disabled={loading || !name.trim()}>
-          {loading ? 'جاري الإضافة...' : 'إضافة متابعة'}
+        <button type="submit" disabled={loading || !topic.trim()}>
+          {loading ? 'جاري الإضافة...' : '➕ إضافة للمتابعة'}
         </button>
 
         {message && (
@@ -94,6 +86,18 @@ export default function SubscriptionForm({ onSubscribe }: SubscriptionFormProps)
           </div>
         )}
       </form>
+
+      <div className="examples-box">
+        <h3>أمثلة على المواضيع:</h3>
+        <ul>
+          <li>🌍 أحداث سياسية: "التوترات بين أمريكا وإيران"</li>
+          <li>💊 اكتشافات طبية: "علاج جديد للربو"</li>
+          <li>📊 معايير دولية: "معايير ISO الجديدة 2024"</li>
+          <li>📈 اقتصاد: "أسعار النفط العالمية"</li>
+          <li>⚽ رياضة: "انتقالات ريال مدريد"</li>
+          <li>💻 تقنية: "إطلاق ChatGPT-5"</li>
+        </ul>
+      </div>
     </div>
   );
 }

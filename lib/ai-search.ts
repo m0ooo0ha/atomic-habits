@@ -1,62 +1,53 @@
-export interface TransferInfo {
-  hasTransfer: boolean;
-  playerName: string;
-  fromTeam: string;
-  toTeam: string;
-  transferDate: string;
+export interface NewsInfo {
+  hasNews: boolean;
+  topic: string;
+  newsTitle: string;
+  newsDate: string;
+  summary: string;
   details: string;
+  source: string;
+  importance: 'عاجل' | 'مهم' | 'عادي';
   currentStatus: string;
 }
 
-export async function searchTransferNews(name: string, type: 'player' | 'team'): Promise<TransferInfo> {
+export async function searchNewsUpdates(topic: string): Promise<NewsInfo> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
 
   if (!apiKey) {
     throw new Error('DEEPSEEK_API_KEY is not set');
   }
 
-  const prompt = type === 'player'
-    ? `ابحث عن آخر أخبار انتقالات اللاعب "${name}".
-       هل تم انتقال هذا اللاعب مؤخراً (خلال آخر 7 أيام)؟
-       إذا كان هناك انتقال، أعطني التفاصيل التالية بدقة:
-       - اسم اللاعب
-       - النادي السابق
-       - النادي الجديد
-       - تاريخ الانتقال
-       - تفاصيل الصفقة (مبلغ الانتقال، مدة العقد، إلخ)
+  const prompt = `ابحث عن آخر الأخبار والتطورات حول الموضوع التالي: "${topic}"
 
-       إذا لم يكن هناك انتقال حديث، قل "لا يوجد انتقال" واذكر الحالة الحالية للاعب.
+       هل هناك أخبار جديدة أو تطورات حديثة (خلال آخر 48 ساعة) حول هذا الموضوع؟
+
+       أمثلة للمواضيع:
+       - أحداث سياسية (مثل: الصراعات، الاتفاقيات)
+       - اكتشافات طبية (مثل: علاجات جديدة، لقاحات)
+       - معايير دولية جديدة
+       - أحداث اقتصادية مهمة
+       - أي موضوع آخر
+
+       أعطني المعلومات التالية:
+       - عنوان الخبر
+       - تاريخ الخبر
+       - ملخص قصير
+       - تفاصيل كاملة
+       - المصدر (إن وجد)
+       - مستوى الأهمية (عاجل/مهم/عادي)
+       - الحالة الحالية للموضوع
 
        أجب بصيغة JSON فقط بهذا الشكل:
        {
-         "hasTransfer": true/false,
-         "playerName": "اسم اللاعب",
-         "fromTeam": "النادي السابق",
-         "toTeam": "النادي الجديد",
-         "transferDate": "تاريخ الانتقال",
-         "details": "تفاصيل الصفقة",
+         "hasNews": true/false,
+         "topic": "الموضوع",
+         "newsTitle": "عنوان الخبر",
+         "newsDate": "تاريخ الخبر",
+         "summary": "ملخص قصير",
+         "details": "التفاصيل الكاملة",
+         "source": "المصدر",
+         "importance": "عاجل أو مهم أو عادي",
          "currentStatus": "الحالة الحالية"
-       }`
-    : `ابحث عن آخر أخبار انتقالات نادي "${name}".
-       هل قام النادي بضم أو بيع لاعبين مؤخراً (خلال آخر 7 أيام)؟
-       إذا كان هناك انتقالات، أعطني تفاصيل أحدث انتقال:
-       - اسم اللاعب
-       - هل هو قادم للنادي أم مغادر
-       - النادي الآخر المعني
-       - تاريخ الانتقال
-       - تفاصيل الصفقة
-
-       إذا لم يكن هناك انتقالات حديثة، قل "لا يوجد انتقالات" واذكر آخر الأخبار عن النادي.
-
-       أجب بصيغة JSON فقط بهذا الشكل:
-       {
-         "hasTransfer": true/false,
-         "playerName": "اسم اللاعب",
-         "fromTeam": "النادي السابق",
-         "toTeam": "النادي الجديد",
-         "transferDate": "تاريخ الانتقال",
-         "details": "تفاصيل الصفقة",
-         "currentStatus": "الحالة الحالية للنادي"
        }`;
 
   try {
@@ -92,18 +83,20 @@ export async function searchTransferNews(name: string, type: 'player' | 'team'):
       throw new Error('Failed to parse AI response');
     }
 
-    const result: TransferInfo = JSON.parse(jsonMatch[0]);
+    const result: NewsInfo = JSON.parse(jsonMatch[0]);
     return result;
   } catch (error) {
     console.error('AI search error:', error);
     return {
-      hasTransfer: false,
-      playerName: name,
-      fromTeam: '',
-      toTeam: '',
-      transferDate: '',
+      hasNews: false,
+      topic: topic,
+      newsTitle: '',
+      newsDate: '',
+      summary: '',
       details: '',
-      currentStatus: 'خطأ في البحث - سيتم المحاولة مرة أخرى',
+      source: '',
+      importance: 'عادي',
+      currentStatus: 'خطأ في البحث - سيتم المحاولة مرة أخرى لاحقاً',
     };
   }
 }
