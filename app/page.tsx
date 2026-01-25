@@ -98,7 +98,7 @@ export default function Home() {
 
       <footer className="footer">
         <p>
-          مدعوم بالذكاء الاصطناعي Claude API
+          مدعوم بالذكاء الاصطناعي DeepSeek AI
         </p>
       </footer>
     </main>

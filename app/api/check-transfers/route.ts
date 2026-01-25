@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getSubscriptions, updateSubscription, addTransfer } from '@/lib/storage';
-import { searchTransferNews } from '@/lib/ai-search';
+import { getSubscriptions, updateSubscription, addNewsAlert } from '@/lib/storage';
+import { searchNewsUpdates } from '@/lib/ai-search';
 
 export const maxDuration = 300; // 5 minutes timeout for this endpoint
 
@@ -19,53 +19,54 @@ export async function POST(request: Request) {
 
     for (const subscription of subscriptions) {
       try {
-        console.log(`Checking ${subscription.type}: ${subscription.name}`);
+        console.log(`Checking topic: ${subscription.topic}`);
 
-        const transferInfo = await searchTransferNews(subscription.name, subscription.type);
+        const newsInfo = await searchNewsUpdates(subscription.topic);
 
         // Update subscription with latest status
         await updateSubscription(subscription.id, {
-          lastStatus: transferInfo.currentStatus,
+          lastStatus: newsInfo.currentStatus,
           lastChecked: new Date().toISOString(),
         });
 
-        // If there's a new transfer, record it
-        if (transferInfo.hasTransfer) {
-          // Check if this transfer is already recorded
-          const isDuplicate = subscription.lastStatus === transferInfo.currentStatus;
+        // If there's new news, record it
+        if (newsInfo.hasNews) {
+          // Check if this news is already recorded
+          const isDuplicate = subscription.lastStatus === newsInfo.currentStatus;
 
           if (!isDuplicate) {
-            const transfer = await addTransfer({
+            const alert = await addNewsAlert({
               subscriptionId: subscription.id,
-              playerName: transferInfo.playerName,
-              fromTeam: transferInfo.fromTeam,
-              toTeam: transferInfo.toTeam,
-              date: transferInfo.transferDate,
-              details: transferInfo.details,
+              topic: newsInfo.topic,
+              newsTitle: newsInfo.newsTitle,
+              summary: newsInfo.summary,
+              details: newsInfo.details,
+              date: newsInfo.newsDate,
+              importance: newsInfo.importance,
               notified: false,
             });
 
             results.push({
-              subscription: subscription.name,
-              transfer,
-              status: 'new_transfer_found',
+              subscription: subscription.topic,
+              alert,
+              status: 'new_news_found',
             });
           } else {
             results.push({
-              subscription: subscription.name,
+              subscription: subscription.topic,
               status: 'already_notified',
             });
           }
         } else {
           results.push({
-            subscription: subscription.name,
-            status: 'no_transfer',
+            subscription: subscription.topic,
+            status: 'no_news',
           });
         }
       } catch (error) {
-        console.error(`Error checking ${subscription.name}:`, error);
+        console.error(`Error checking ${subscription.topic}:`, error);
         results.push({
-          subscription: subscription.name,
+          subscription: subscription.topic,
           status: 'error',
           error: error instanceof Error ? error.message : 'Unknown error',
         });
@@ -79,9 +80,9 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error in check-transfers:', error);
+    console.error('Error in check-news:', error);
     return NextResponse.json(
-      { error: 'Failed to check transfers', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to check news', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
