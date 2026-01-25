@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getTransfers } from '@/lib/storage';
+import { getNewsAlerts } from '@/lib/storage';
 
 export async function GET() {
   try {
-    const transfers = await getTransfers();
-    // Get only unnotified transfers
-    const unnotified = transfers.filter(t => !t.notified);
+    const alerts = await getNewsAlerts();
+    // Get only unnotified alerts
+    const unnotified = alerts.filter(a => !a.notified);
     return NextResponse.json(unnotified);
   } catch (error) {
     console.error('Error fetching notifications:', error);
