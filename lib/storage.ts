@@ -1,5 +1,4 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv';
 
 export interface Subscription {
   id: string;
@@ -22,34 +21,17 @@ export interface NewsAlert {
   notified: boolean;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const SUBSCRIPTIONS_FILE = path.join(DATA_DIR, 'subscriptions.json');
-const NEWS_ALERTS_FILE = path.join(DATA_DIR, 'news-alerts.json');
-
-async function ensureDataDir() {
-  try {
-    await fs.access(DATA_DIR);
-  } catch {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-  }
-}
-
-async function readJSON<T>(filePath: string, defaultValue: T): Promise<T> {
-  try {
-    const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return defaultValue;
-  }
-}
-
-async function writeJSON<T>(filePath: string, data: T): Promise<void> {
-  await ensureDataDir();
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-}
+const SUBSCRIPTIONS_KEY = 'subscriptions';
+const NEWS_ALERTS_KEY = 'news-alerts';
 
 export async function getSubscriptions(): Promise<Subscription[]> {
-  return readJSON<Subscription[]>(SUBSCRIPTIONS_FILE, []);
+  try {
+    const subscriptions = await kv.get<Subscription[]>(SUBSCRIPTIONS_KEY);
+    return subscriptions || [];
+  } catch (error) {
+    console.error('Error getting subscriptions from KV:', error);
+    return [];
+  }
 }
 
 export async function addSubscription(subscription: Omit<Subscription, 'id' | 'createdAt'>): Promise<Subscription> {
@@ -60,7 +42,7 @@ export async function addSubscription(subscription: Omit<Subscription, 'id' | 'c
     createdAt: new Date().toISOString(),
   };
   subscriptions.push(newSubscription);
-  await writeJSON(SUBSCRIPTIONS_FILE, subscriptions);
+  await kv.set(SUBSCRIPTIONS_KEY, subscriptions);
   return newSubscription;
 }
 
@@ -69,18 +51,24 @@ export async function updateSubscription(id: string, updates: Partial<Subscripti
   const index = subscriptions.findIndex(sub => sub.id === id);
   if (index !== -1) {
     subscriptions[index] = { ...subscriptions[index], ...updates };
-    await writeJSON(SUBSCRIPTIONS_FILE, subscriptions);
+    await kv.set(SUBSCRIPTIONS_KEY, subscriptions);
   }
 }
 
 export async function deleteSubscription(id: string): Promise<void> {
   const subscriptions = await getSubscriptions();
   const filtered = subscriptions.filter(sub => sub.id !== id);
-  await writeJSON(SUBSCRIPTIONS_FILE, filtered);
+  await kv.set(SUBSCRIPTIONS_KEY, filtered);
 }
 
 export async function getNewsAlerts(): Promise<NewsAlert[]> {
-  return readJSON<NewsAlert[]>(NEWS_ALERTS_FILE, []);
+  try {
+    const alerts = await kv.get<NewsAlert[]>(NEWS_ALERTS_KEY);
+    return alerts || [];
+  } catch (error) {
+    console.error('Error getting news alerts from KV:', error);
+    return [];
+  }
 }
 
 export async function addNewsAlert(alert: Omit<NewsAlert, 'id'>): Promise<NewsAlert> {
@@ -90,7 +78,7 @@ export async function addNewsAlert(alert: Omit<NewsAlert, 'id'>): Promise<NewsAl
     id: Date.now().toString(),
   };
   alerts.push(newAlert);
-  await writeJSON(NEWS_ALERTS_FILE, alerts);
+  await kv.set(NEWS_ALERTS_KEY, alerts);
   return newAlert;
 }
 
@@ -99,6 +87,6 @@ export async function markAlertNotified(id: string): Promise<void> {
   const index = alerts.findIndex(a => a.id === id);
   if (index !== -1) {
     alerts[index].notified = true;
-    await writeJSON(NEWS_ALERTS_FILE, alerts);
+    await kv.set(NEWS_ALERTS_KEY, alerts);
   }
 }
