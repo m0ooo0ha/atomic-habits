@@ -14,19 +14,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { type, name } = body;
+    const { topic, description } = body;
 
-    if (!type || !name) {
-      return NextResponse.json({ error: 'Type and name are required' }, { status: 400 });
-    }
-
-    if (type !== 'player' && type !== 'team') {
-      return NextResponse.json({ error: 'Type must be "player" or "team"' }, { status: 400 });
+    if (!topic || topic.trim() === '') {
+      return NextResponse.json({ error: 'Topic is required' }, { status: 400 });
     }
 
     const subscription = await addSubscription({
-      type,
-      name,
+      topic: topic.trim(),
+      description: description?.trim() || '',
       lastStatus: 'لم يتم الفحص بعد',
       lastChecked: new Date().toISOString(),
     });

@@ -3,27 +3,28 @@ import path from 'path';
 
 export interface Subscription {
   id: string;
-  type: 'player' | 'team';
-  name: string;
+  topic: string; // الموضوع المراد تتبعه (مثل: "ضربة أمريكا لإيران", "علاج الربو")
+  description: string; // وصف اختياري
   lastStatus: string;
   lastChecked: string;
   createdAt: string;
 }
 
-export interface Transfer {
+export interface NewsAlert {
   id: string;
   subscriptionId: string;
-  playerName: string;
-  fromTeam: string;
-  toTeam: string;
-  date: string;
+  topic: string;
+  newsTitle: string;
+  summary: string;
   details: string;
+  date: string;
+  importance: 'عاجل' | 'مهم' | 'عادي';
   notified: boolean;
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const SUBSCRIPTIONS_FILE = path.join(DATA_DIR, 'subscriptions.json');
-const TRANSFERS_FILE = path.join(DATA_DIR, 'transfers.json');
+const NEWS_ALERTS_FILE = path.join(DATA_DIR, 'news-alerts.json');
 
 async function ensureDataDir() {
   try {
@@ -78,26 +79,26 @@ export async function deleteSubscription(id: string): Promise<void> {
   await writeJSON(SUBSCRIPTIONS_FILE, filtered);
 }
 
-export async function getTransfers(): Promise<Transfer[]> {
-  return readJSON<Transfer[]>(TRANSFERS_FILE, []);
+export async function getNewsAlerts(): Promise<NewsAlert[]> {
+  return readJSON<NewsAlert[]>(NEWS_ALERTS_FILE, []);
 }
 
-export async function addTransfer(transfer: Omit<Transfer, 'id'>): Promise<Transfer> {
-  const transfers = await getTransfers();
-  const newTransfer: Transfer = {
-    ...transfer,
+export async function addNewsAlert(alert: Omit<NewsAlert, 'id'>): Promise<NewsAlert> {
+  const alerts = await getNewsAlerts();
+  const newAlert: NewsAlert = {
+    ...alert,
     id: Date.now().toString(),
   };
-  transfers.push(newTransfer);
-  await writeJSON(TRANSFERS_FILE, transfers);
-  return newTransfer;
+  alerts.push(newAlert);
+  await writeJSON(NEWS_ALERTS_FILE, alerts);
+  return newAlert;
 }
 
-export async function markTransferNotified(id: string): Promise<void> {
-  const transfers = await getTransfers();
-  const index = transfers.findIndex(t => t.id === id);
+export async function markAlertNotified(id: string): Promise<void> {
+  const alerts = await getNewsAlerts();
+  const index = alerts.findIndex(a => a.id === id);
   if (index !== -1) {
-    transfers[index].notified = true;
-    await writeJSON(TRANSFERS_FILE, transfers);
+    alerts[index].notified = true;
+    await writeJSON(NEWS_ALERTS_FILE, alerts);
   }
 }
