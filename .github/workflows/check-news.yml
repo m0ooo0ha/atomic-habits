@@ -1,0 +1,17 @@
+name: Check News Updates
+
+on:
+  schedule:
+    # Runs every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-news:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger news check
+        run: |
+          curl -X POST "https://atomic-habits-REPLACE-THIS.vercel.app/api/check-transfers" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
