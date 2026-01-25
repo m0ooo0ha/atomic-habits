@@ -13,5 +13,5 @@ jobs:
     steps:
       - name: Trigger news check
         run: |
-          curl -X POST "https://atomic-habits-REPLACE-THIS.vercel.app/api/check-transfers" \
+          curl -X POST "https://atomic-habits-alpha.vercel.app/api/check-transfers" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
