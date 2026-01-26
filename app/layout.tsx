@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: '/icon-192x192.svg',
-    apple: '/icon-192x192.svg',
+    icon: '/icon-192x192.png',
+    apple: '/icon-192x192.png',
   },
 };
 
@@ -35,8 +35,8 @@ export default function RootLayout({
     <html lang="ar" dir="rtl">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icon-192x192.svg" />
-        <link rel="apple-touch-icon" href="/icon-192x192.svg" />
+        <link rel="icon" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

@@ -3,8 +3,8 @@ const CACHE_NAME = 'transfer-tracker-v1';
 const urlsToCache = [
   '/',
   '/manifest.json',
-  '/icon-192x192.svg',
-  '/icon-512x512.svg',
+  '/icon-192x192.png',
+  '/icon-512x512.png',
 ];
 
 // Install event - cache important files
@@ -80,8 +80,8 @@ self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
   const options = {
     body: data.body || 'انتقال جديد!',
-    icon: '/icon-192x192.svg',
-    badge: '/icon-96x96.svg',
+    icon: '/icon-192x192.png',
+    badge: '/icon-96x96.png',
     vibrate: [200, 100, 200],
     data: data,
     actions: [
