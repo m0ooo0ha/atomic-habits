@@ -7,8 +7,12 @@ interface Transfer {
   playerName: string;
   fromTeam: string;
   toTeam: string;
+  transferType: string;
+  transferFee: string;
+  contractLength: string;
   date: string;
   details: string;
+  importance: string;
 }
 
 export default function NotificationBanner() {
@@ -64,20 +68,29 @@ export default function NotificationBanner() {
   return (
     <div className="notification-banner">
       {activeNotifications.map((notification) => (
-        <div key={notification.id} className="notification">
+        <div key={notification.id} className={`notification ${notification.importance === 'عاجل' ? 'urgent' : ''}`}>
           <div className="notification-content">
             <div className="notification-title">
-              🔔 انتقال جديد!
+              {notification.importance === 'عاجل' ? '🔴' : '🔔'} انتقال جديد! {notification.importance === 'عاجل' && '⚡'}
             </div>
             <div className="notification-body">
-              <strong>{notification.playerName}</strong>
+              <strong>⚽ {notification.playerName}</strong>
               <div className="transfer-info">
-                <span className="from">{notification.fromTeam}</span>
+                <span className="from">{notification.fromTeam || 'غير محدد'}</span>
                 <span className="arrow">←</span>
                 <span className="to">{notification.toTeam}</span>
               </div>
+              <div className="transfer-details">
+                <div className="transfer-type">📋 {notification.transferType}</div>
+                {notification.transferFee && (
+                  <div className="transfer-fee">💰 {notification.transferFee}</div>
+                )}
+                {notification.contractLength && (
+                  <div className="contract-length">📝 {notification.contractLength}</div>
+                )}
+              </div>
               {notification.details && (
-                <div className="details">{notification.details}</div>
+                <div className="details">ℹ️ {notification.details}</div>
               )}
               {notification.date && (
                 <div className="date">📅 {notification.date}</div>

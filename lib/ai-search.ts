@@ -1,50 +1,80 @@
-export interface NewsInfo {
-  hasNews: boolean;
-  topic: string;
-  newsTitle: string;
-  newsDate: string;
-  summary: string;
+export interface TransferInfo {
+  hasTransfer: boolean;
+  playerName: string;
+  fromTeam: string;
+  toTeam: string;
+  transferType: 'انتقال دائم' | 'إعارة' | 'انتقال حر' | 'تجديد عقد';
+  transferFee: string;
+  contractLength: string;
+  transferDate: string;
   details: string;
   source: string;
   importance: 'عاجل' | 'مهم' | 'عادي';
   currentStatus: string;
 }
 
-export async function searchNewsUpdates(topic: string): Promise<NewsInfo> {
+export async function searchPlayerTransfers(playerOrTeamName: string, type: 'player' | 'team'): Promise<TransferInfo> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
 
   if (!apiKey) {
     throw new Error('DEEPSEEK_API_KEY is not set');
   }
 
-  const prompt = `ابحث عن آخر الأخبار والتطورات حول الموضوع التالي: "${topic}"
+  const prompt = type === 'player'
+    ? `ابحث عن آخر أخبار انتقالات اللاعب: "${playerOrTeamName}"
 
-       هل هناك أخبار جديدة أو تطورات حديثة (خلال آخر 48 ساعة) حول هذا الموضوع؟
+       هل هناك أخبار انتقال جديدة أو شائعات انتقال قوية (خلال آخر 7 أيام) حول هذا اللاعب؟
 
-       أمثلة للمواضيع:
-       - أحداث سياسية (مثل: الصراعات، الاتفاقيات)
-       - اكتشافات طبية (مثل: علاجات جديدة، لقاحات)
-       - معايير دولية جديدة
-       - أحداث اقتصادية مهمة
-       - أي موضوع آخر
+       أبحث عن:
+       - انتقال دائم إلى نادي جديد
+       - إعارة إلى نادي آخر
+       - انتقال حر (Free Transfer)
+       - تجديد عقد مع النادي الحالي
+       - شائعات انتقال قوية من مصادر موثوقة
 
-       أعطني المعلومات التالية:
-       - عنوان الخبر
-       - تاريخ الخبر
-       - ملخص قصير
-       - تفاصيل كاملة
+       أعطني المعلومات التالية بدقة:
+       - اسم اللاعب
+       - الفريق المنتقل منه (إن وجد)
+       - الفريق المنتقل إليه
+       - نوع الانتقال (انتقال دائم، إعارة، انتقال حر، تجديد عقد)
+       - قيمة الصفقة (بالمليون يورو أو مجاني)
+       - مدة العقد (مثال: 4 سنوات)
+       - تاريخ الانتقال أو تاريخ الإعلان
+       - تفاصيل إضافية مهمة
        - المصدر (إن وجد)
        - مستوى الأهمية (عاجل/مهم/عادي)
-       - الحالة الحالية للموضوع
+       - الحالة الحالية (تم رسمياً، قيد التفاوض، شائعة قوية)
 
        أجب بصيغة JSON فقط بهذا الشكل:
        {
-         "hasNews": true/false,
-         "topic": "الموضوع",
-         "newsTitle": "عنوان الخبر",
-         "newsDate": "تاريخ الخبر",
-         "summary": "ملخص قصير",
-         "details": "التفاصيل الكاملة",
+         "hasTransfer": true/false,
+         "playerName": "اسم اللاعب",
+         "fromTeam": "الفريق المنتقل منه",
+         "toTeam": "الفريق المنتقل إليه",
+         "transferType": "انتقال دائم أو إعارة أو انتقال حر أو تجديد عقد",
+         "transferFee": "قيمة الصفقة",
+         "contractLength": "مدة العقد",
+         "transferDate": "تاريخ الانتقال",
+         "details": "التفاصيل الإضافية",
+         "source": "المصدر",
+         "importance": "عاجل أو مهم أو عادي",
+         "currentStatus": "الحالة الحالية"
+       }`
+    : `ابحث عن آخر انتقالات نادي: "${playerOrTeamName}"
+
+       هل هناك انتقالات جديدة (قادمة أو مغادرة) خلال آخر 7 أيام لهذا النادي؟
+
+       أعطني المعلومات بصيغة JSON:
+       {
+         "hasTransfer": true/false,
+         "playerName": "اسم اللاعب",
+         "fromTeam": "الفريق المنتقل منه",
+         "toTeam": "الفريق المنتقل إليه",
+         "transferType": "انتقال دائم أو إعارة أو انتقال حر أو تجديد عقد",
+         "transferFee": "قيمة الصفقة",
+         "contractLength": "مدة العقد",
+         "transferDate": "تاريخ الانتقال",
+         "details": "التفاصيل الإضافية",
          "source": "المصدر",
          "importance": "عاجل أو مهم أو عادي",
          "currentStatus": "الحالة الحالية"
@@ -83,16 +113,19 @@ export async function searchNewsUpdates(topic: string): Promise<NewsInfo> {
       throw new Error('Failed to parse AI response');
     }
 
-    const result: NewsInfo = JSON.parse(jsonMatch[0]);
+    const result: TransferInfo = JSON.parse(jsonMatch[0]);
     return result;
   } catch (error) {
     console.error('AI search error:', error);
     return {
-      hasNews: false,
-      topic: topic,
-      newsTitle: '',
-      newsDate: '',
-      summary: '',
+      hasTransfer: false,
+      playerName: playerOrTeamName,
+      fromTeam: '',
+      toTeam: '',
+      transferType: 'انتقال دائم',
+      transferFee: '',
+      contractLength: '',
+      transferDate: '',
       details: '',
       source: '',
       importance: 'عادي',

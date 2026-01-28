@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getSubscriptions, updateSubscription, addNewsAlert } from '@/lib/storage';
-import { searchNewsUpdates } from '@/lib/ai-search';
+import { getSubscriptions, updateSubscription, addTransferAlert } from '@/lib/storage';
+import { searchPlayerTransfers } from '@/lib/ai-search';
 
 export const maxDuration = 300; // 5 minutes timeout for this endpoint
 
@@ -19,54 +19,58 @@ export async function POST(request: Request) {
 
     for (const subscription of subscriptions) {
       try {
-        console.log(`Checking topic: ${subscription.topic}`);
+        console.log(`Checking ${subscription.type}: ${subscription.name}`);
 
-        const newsInfo = await searchNewsUpdates(subscription.topic);
+        const transferInfo = await searchPlayerTransfers(subscription.name, subscription.type);
 
         // Update subscription with latest status
         await updateSubscription(subscription.id, {
-          lastStatus: newsInfo.currentStatus,
+          lastStatus: transferInfo.currentStatus,
           lastChecked: new Date().toISOString(),
         });
 
-        // If there's new news, record it
-        if (newsInfo.hasNews) {
-          // Check if this news is already recorded
-          const isDuplicate = subscription.lastStatus === newsInfo.currentStatus;
+        // If there's a new transfer, record it
+        if (transferInfo.hasTransfer) {
+          // Check if this transfer is already recorded
+          const isDuplicate = subscription.lastStatus === transferInfo.currentStatus;
 
           if (!isDuplicate) {
-            const alert = await addNewsAlert({
+            const alert = await addTransferAlert({
               subscriptionId: subscription.id,
-              topic: newsInfo.topic,
-              newsTitle: newsInfo.newsTitle,
-              summary: newsInfo.summary,
-              details: newsInfo.details,
-              date: newsInfo.newsDate,
-              importance: newsInfo.importance,
+              playerName: transferInfo.playerName,
+              fromTeam: transferInfo.fromTeam,
+              toTeam: transferInfo.toTeam,
+              transferType: transferInfo.transferType,
+              transferFee: transferInfo.transferFee,
+              contractLength: transferInfo.contractLength,
+              date: transferInfo.transferDate,
+              details: transferInfo.details,
+              source: transferInfo.source,
+              importance: transferInfo.importance,
               notified: false,
             });
 
             results.push({
-              subscription: subscription.topic,
+              subscription: subscription.name,
               alert,
-              status: 'new_news_found',
+              status: 'new_transfer_found',
             });
           } else {
             results.push({
-              subscription: subscription.topic,
+              subscription: subscription.name,
               status: 'already_notified',
             });
           }
         } else {
           results.push({
-            subscription: subscription.topic,
-            status: 'no_news',
+            subscription: subscription.name,
+            status: 'no_transfer',
           });
         }
       } catch (error) {
-        console.error(`Error checking ${subscription.topic}:`, error);
+        console.error(`Error checking ${subscription.name}:`, error);
         results.push({
-          subscription: subscription.topic,
+          subscription: subscription.name,
           status: 'error',
           error: error instanceof Error ? error.message : 'Unknown error',
         });

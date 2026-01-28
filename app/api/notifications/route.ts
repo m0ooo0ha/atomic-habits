@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getNewsAlerts } from '@/lib/storage';
+import { getTransferAlerts } from '@/lib/storage';
 
 export async function GET() {
   try {
-    const alerts = await getNewsAlerts();
+    const alerts = await getTransferAlerts();
     // Get only unnotified alerts
     const unnotified = alerts.filter(a => !a.notified);
     return NextResponse.json(unnotified);

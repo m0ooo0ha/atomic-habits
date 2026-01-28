@@ -1,10 +1,10 @@
 # ⚽ متابع انتقالات اللاعبين بالذكاء الاصطناعي
 
-نظام متكامل لتتبع انتقالات اللاعبين والأندية باستخدام الذكاء الاصطناعي من Claude.
+نظام متكامل لتتبع انتقالات اللاعبين والأندية باستخدام الذكاء الاصطناعي من DeepSeek.
 
 ## ✨ المميزات
 
-- 🔍 **بحث ذكي**: يستخدم Claude AI للبحث عن آخر أخبار الانتقالات
+- 🔍 **بحث ذكي**: يستخدم DeepSeek AI للبحث عن آخر أخبار الانتقالات
 - ⏰ **فحص تلقائي**: يتم فحص الانتقالات تلقائياً كل 30 دقيقة
 - 🔔 **إشعارات فورية**: تلقي إشعارات فقط عند حدوث انتقالات جديدة
 - 👤 **متابعة اللاعبين**: تابع لاعبيك المفضلين
@@ -16,7 +16,8 @@
 ### 1. المتطلبات
 
 - Node.js 18 أو أحدث
-- مفتاح API من Claude (Anthropic)
+- مفتاح API من DeepSeek
+- حساب Vercel مع Vercel KV (للنشر)
 
 ### 2. التثبيت
 
@@ -33,12 +34,16 @@ cp .env.example .env.local
 افتح ملف `.env.local` وأضف المفاتيح التالية:
 
 ```env
-# مفتاح Claude API
-# احصل عليه من: https://console.anthropic.com/
-ANTHROPIC_API_KEY=your_api_key_here
+# مفتاح DeepSeek API
+# احصل عليه من: https://platform.deepseek.com/
+DEEPSEEK_API_KEY=your_api_key_here
 
 # مفتاح سري لحماية endpoint الفحص التلقائي
 CRON_SECRET=your_random_secret_here
+
+# Vercel KV (للنشر على Vercel فقط)
+KV_REST_API_TOKEN=your_kv_token
+KV_REST_API_URL=your_kv_url
 ```
 
 ### 4. تشغيل المشروع
@@ -91,10 +96,13 @@ git push origin main
 
 1. اذهب إلى [vercel.com](https://vercel.com)
 2. استورد المشروع من GitHub
-3. أضف المتغيرات البيئية:
-   - `ANTHROPIC_API_KEY`
+3. أضف قاعدة بيانات Vercel KV
+4. أضف المتغيرات البيئية:
+   - `DEEPSEEK_API_KEY`
    - `CRON_SECRET`
-4. انشر المشروع
+   - `KV_REST_API_TOKEN` (تلقائي من Vercel KV)
+   - `KV_REST_API_URL` (تلقائي من Vercel KV)
+5. انشر المشروع
 
 الـ Cron Job سيعمل تلقائياً على Vercel كل 30 دقيقة!
 
@@ -115,9 +123,12 @@ atomic-habits/
 │   ├── layout.tsx               # القالب الرئيسي
 │   └── page.tsx                 # الصفحة الرئيسية
 ├── lib/
-│   ├── storage.ts               # نظام تخزين البيانات
-│   └── ai-search.ts             # البحث بالذكاء الاصطناعي
-├── data/                        # ملفات البيانات (JSON)
+│   ├── storage.ts               # نظام تخزين البيانات (Vercel KV)
+│   └── ai-search.ts             # البحث بالذكاء الاصطناعي (DeepSeek)
+├── public/
+│   ├── manifest.json            # PWA Manifest
+│   ├── sw.js                    # Service Worker
+│   └── icon-*.png               # أيقونات PWA
 ├── vercel.json                  # إعدادات Vercel Cron
 └── package.json
 ```
@@ -126,9 +137,9 @@ atomic-habits/
 
 1. **الإضافة**: تضيف لاعباً أو نادياً للمتابعة
 2. **الفحص التلقائي**: كل 30 دقيقة:
-   - يستخدم Claude AI للبحث عن أخبار الانتقالات
+   - يستخدم DeepSeek AI للبحث عن أخبار الانتقالات
    - يقارن النتائج الجديدة بالحالة السابقة
-   - يسجل الانتقالات الجديدة
+   - يسجل الانتقالات الجديدة في Vercel KV
 3. **الإشعارات**: عند وجود انتقال جديد:
    - يظهر banner في الموقع
    - يرسل إشعار متصفح (إذا كان مفعلاً)
@@ -136,23 +147,24 @@ atomic-habits/
 ## 📝 ملاحظات مهمة
 
 - النظام يتحقق من الانتقالات خلال آخر 7 أيام فقط
-- تحتاج إلى رصيد كافٍ في حساب Claude API
+- تحتاج إلى رصيد كافٍ في حساب DeepSeek API
 - الإشعارات تعمل فقط في المتصفحات التي تدعمها
-- البيانات تُخزن في ملفات JSON محلية
+- البيانات تُخزن في Vercel KV (سحابياً)
 
 ## 🔐 الأمان
 
 - استخدم `CRON_SECRET` قوي لحماية endpoint الفحص
-- لا تشارك مفتاح `ANTHROPIC_API_KEY`
+- لا تشارك مفتاح `DEEPSEEK_API_KEY`
 - أضف `.env.local` إلى `.gitignore`
 
 ## 🆘 المساعدة والدعم
 
 إذا واجهت أي مشاكل:
 
-1. تأكد من صحة مفتاح Claude API
+1. تأكد من صحة مفتاح DeepSeek API
 2. تأكد من تثبيت جميع المكتبات
-3. راجع console للأخطاء
+3. تأكد من إعداد Vercel KV بشكل صحيح
+4. راجع console للأخطاء
 
 ## 📄 الترخيص
 
@@ -160,4 +172,4 @@ atomic-habits/
 
 ---
 
-صُنع بـ ❤️ باستخدام Next.js و Claude AI
+صُنع بـ ❤️ باستخدام Next.js و DeepSeek AI

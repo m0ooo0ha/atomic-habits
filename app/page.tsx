@@ -8,7 +8,10 @@ import PWAInstaller from './components/PWAInstaller';
 
 interface Subscription {
   id: string;
-  topic: string;
+  type: 'player' | 'team';
+  name: string;
+  league: string;
+  position: string;
   description: string;
   lastStatus: string;
   lastChecked: string;
@@ -53,19 +56,19 @@ export default function Home() {
   return (
     <main className="container">
       <header className="header">
-        <h1>📰 متتبع الأخبار الذكي</h1>
+        <h1>⚽ متتبع انتقالات اللاعبين</h1>
         <p className="subtitle">
-          تابع أي موضوع تريده واحصل على إشعارات فورية عند ظهور أخبار جديدة
+          تابع لاعبيك المفضلين وفرقك المحببة واحصل على إشعارات فورية عند حدوث انتقالات جديدة
         </p>
         <div className="info-box">
           <p>
             🤖 يتم الفحص تلقائياً كل 30 دقيقة
           </p>
           <p>
-            🔔 ستتلقى إشعاراً فقط عند ظهور أخبار جديدة
+            🔔 ستتلقى إشعاراً فقط عند رصد انتقال جديد
           </p>
           <p>
-            💡 مثال: "ضربة أمريكا لإيران" • "علاج الربو" • "معايير ISO جديدة"
+            💡 مثال: محمد صلاح • كريستيانو رونالدو • ريال مدريد • النصر
           </p>
         </div>
 
